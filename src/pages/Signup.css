@@ -1,28 +1,29 @@
-.login-container {
+.signup-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  padding: 20px;
 }
 
-.login-box {
+.signup-box {
   background: white;
   padding: 40px;
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 400px;
+  width: 450px;
   max-width: 90%;
 }
 
-.login-box h1 {
-  color: #667eea;
+.signup-box h1 {
+  color: #11998e;
   font-size: 24px;
   margin-bottom: 10px;
   text-align: center;
 }
 
-.login-box h2 {
+.signup-box h2 {
   color: #333;
   font-size: 28px;
   margin-bottom: 30px;
@@ -40,7 +41,8 @@
   font-weight: bold;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 12px;
   border: 2px solid #ddd;
@@ -49,15 +51,16 @@
   box-sizing: border-box;
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #11998e;
 }
 
-.login-button {
+.signup-button {
   width: 100%;
   padding: 12px;
-  background: #667eea;
+  background: #11998e;
   color: white;
   border: none;
   border-radius: 5px;
@@ -65,31 +68,32 @@
   font-weight: bold;
   cursor: pointer;
   transition: background 0.3s;
+  margin-top: 10px;
 }
 
-.login-button:hover {
-  background: #5568d3;
+.signup-button:hover {
+  background: #0e8074;
 }
 
-.signup-link {
+.login-link {
   text-align: center;
   margin-top: 20px;
   color: #666;
 }
 
-.signup-link a {
-  color: #667eea;
+.login-link a {
+  color: #11998e;
   text-decoration: none;
   font-weight: bold;
 }
 
-.signup-link a:hover {
+.login-link a:hover {
   text-decoration: underline;
 }
 .link-button {
      background: none;
      border: none;
-     color: #667eea;
+     color: #11998e;
      font-weight: bold;
      cursor: pointer;
      padding: 0;

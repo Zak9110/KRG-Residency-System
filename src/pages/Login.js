@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-function Login() {
+function Login({ onSwitchToSignup }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -46,7 +46,7 @@ function Login() {
         </form>
 
         <p className="signup-link">
-          Don't have an account? <a href="#signup">Sign up</a>
+          Don't have an account? <button type="button" onClick={onSwitchToSignup} className="link-button">Sign up</button>
         </p>
       </div>
     </div>
