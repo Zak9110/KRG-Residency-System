@@ -4,14 +4,24 @@ import Signup from './pages/Signup';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login');
+  const [currentPage, setCurrentPage] = useState('signup'); // Start on signup for testing
+
+  const switchToLogin = () => {
+    console.log('Switching to login page');
+    setCurrentPage('login');
+  };
+
+  const switchToSignup = () => {
+    console.log('Switching to signup page');
+    setCurrentPage('signup');
+  };
 
   return (
     <div className="App">
       {currentPage === 'login' ? (
-        <Login onSwitchToSignup={() => setCurrentPage('signup')} />
+        <Login onSwitchToSignup={switchToSignup} />
       ) : (
-        <Signup onSwitchToLogin={() => setCurrentPage('login')} />
+        <Signup onSwitchToLogin={switchToLogin} />
       )}
     </div>
   );

@@ -1,14 +1,47 @@
 import React, { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../services/firebase';
 import './Login.css';
 
 function Login({ onSwitchToSignup }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    alert('Login button clicked! Email: ' + email);
-    // We'll add real login later
+    setLoading(true);
+    setError('');
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login successful:', userCredential.user);
+      alert('Login successful! Welcome ' + userCredential.user.displayName);
+      // Later we'll redirect to dashboard instead of alert
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      switch (error.code) {
+        case 'auth/invalid-email':
+          setError('Invalid email address!');
+          break;
+        case 'auth/user-not-found':
+          setError('No account found with this email!');
+          break;
+        case 'auth/wrong-password':
+          setError('Incorrect password!');
+          break;
+        case 'auth/invalid-credential':
+          setError('Invalid email or password!');
+          break;
+        default:
+          setError('Login failed: ' + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -16,6 +49,8 @@ function Login({ onSwitchToSignup }) {
       <div className="login-box">
         <h1>KRG Residency System</h1>
         <h2>Login</h2>
+        
+        {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleLogin}>
           <div className="input-group">
@@ -26,6 +61,7 @@ function Login({ onSwitchToSignup }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
+              disabled={loading}
             />
           </div>
 
@@ -37,16 +73,25 @@ function Login({ onSwitchToSignup }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="login-button">
-            Login
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <p className="signup-link">
-          Don't have an account? <button type="button" onClick={onSwitchToSignup} className="link-button">Sign up</button>
+          Don't have an account? 
+          <button 
+            type="button" 
+            onClick={onSwitchToSignup} 
+            className="link-button"
+            disabled={loading}
+          >
+            Sign up
+          </button>
         </p>
       </div>
     </div>
