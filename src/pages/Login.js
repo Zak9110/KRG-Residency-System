@@ -16,9 +16,9 @@ function Login({ onSwitchToSignup }) {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
       console.log('Login successful:', userCredential.user);
-      alert('Login successful! Welcome ' + userCredential.user.displayName);
-      // Later we'll redirect to dashboard instead of alert
+      // App.js will automatically redirect based on user type
       
     } catch (error) {
       console.error('Login error:', error);

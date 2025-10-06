@@ -5,21 +5,26 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import ApplicationForm from './pages/ApplicationForm';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('login');
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
-        setCurrentPage('dashboard');
+        // Simple admin check: if email contains 'admin'
+        const adminCheck = user.email.toLowerCase().includes('admin');
+        setIsAdmin(adminCheck);
+        setCurrentPage(adminCheck ? 'admin-dashboard' : 'dashboard');
       } else {
         setUser(null);
+        setIsAdmin(false);
         setCurrentPage('login');
       }
       setLoading(false);
@@ -34,7 +39,9 @@ function App() {
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
-        height: '100vh' 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666'
       }}>
         Loading...
       </div>
@@ -51,7 +58,7 @@ function App() {
         <Signup onSwitchToLogin={() => setCurrentPage('login')} />
       )}
       
-      {currentPage === 'dashboard' && user && (
+      {currentPage === 'dashboard' && user && !isAdmin && (
         <Dashboard 
           onNavigateToApplication={() => setCurrentPage('application')}
           onLogout={() => setCurrentPage('login')}
@@ -61,6 +68,12 @@ function App() {
       {currentPage === 'application' && user && (
         <ApplicationForm 
           onBackToDashboard={() => setCurrentPage('dashboard')}
+        />
+      )}
+
+      {currentPage === 'admin-dashboard' && user && isAdmin && (
+        <AdminDashboard 
+          onLogout={() => setCurrentPage('login')}
         />
       )}
     </div>
