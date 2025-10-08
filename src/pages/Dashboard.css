@@ -159,3 +159,38 @@
   border-radius: 5px;
   margin-bottom: 20px;
 }
+/* Improved animations */
+.application-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.application-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Better empty state */
+.no-applications {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Status icons */
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  margin-right: 6px;
+}
+
+/* Pulse animation for pending */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-badge[style*="FFA500"]::before {
+  animation: pulse 2s infinite;
+}

@@ -1,3 +1,5 @@
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../services/firebase';
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
@@ -15,7 +17,12 @@ function ApplicationForm({ onBackToDashboard }) {
     reasonForResidency: '',
     durationOfStay: '3-months'
   });
+  const [files, setFiles] = useState({
+    idDocument: null,
+    proofOfAddress: null
+  });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -25,9 +32,38 @@ function ApplicationForm({ onBackToDashboard }) {
     });
   };
 
+  const handleFileChange = (e) => {
+    const { name, files: selectedFiles } = e.target;
+    if (selectedFiles && selectedFiles[0]) {
+      // Check file size (max 5MB)
+      if (selectedFiles[0].size > 5 * 1024 * 1024) {
+        setError('File size must be less than 5MB');
+        return;
+      }
+      setFiles(prev => ({
+        ...prev,
+        [name]: selectedFiles[0]
+      }));
+      setError('');
+    }
+  };
+
+  const uploadFile = async (file, folder) => {
+    if (!file) return null;
+    
+    const fileName = `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `${folder}/${auth.currentUser.uid}/${fileName}`);
+    
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    
+    return downloadURL;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setUploading(true);
     setError('');
 
     try {
@@ -36,7 +72,20 @@ function ApplicationForm({ onBackToDashboard }) {
       if (!user) {
         setError('You must be logged in to submit an application');
         setLoading(false);
+        setUploading(false);
         return;
+      }
+
+      // Upload documents
+      let idDocumentURL = null;
+      let proofOfAddressURL = null;
+
+      if (files.idDocument) {
+        idDocumentURL = await uploadFile(files.idDocument, 'id-documents');
+      }
+
+      if (files.proofOfAddress) {
+        proofOfAddressURL = await uploadFile(files.proofOfAddress, 'address-proofs');
       }
 
       // Add application to Firestore
@@ -45,6 +94,10 @@ function ApplicationForm({ onBackToDashboard }) {
         userId: user.uid,
         userEmail: user.email,
         status: 'pending',
+        documents: {
+          idDocument: idDocumentURL,
+          proofOfAddress: proofOfAddressURL
+        },
         submittedAt: serverTimestamp(),
         reviewedAt: null,
         reviewedBy: null,
@@ -67,6 +120,11 @@ function ApplicationForm({ onBackToDashboard }) {
         durationOfStay: '3-months'
       });
 
+      setFiles({
+        idDocument: null,
+        proofOfAddress: null
+      });
+
       if (onBackToDashboard) {
         onBackToDashboard();
       }
@@ -76,6 +134,7 @@ function ApplicationForm({ onBackToDashboard }) {
       setError('Failed to submit application: ' + error.message);
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -86,6 +145,7 @@ function ApplicationForm({ onBackToDashboard }) {
         <h2>Iraqi Citizens from Other Provinces</h2>
 
         {error && <div className="error-message">{error}</div>}
+        {uploading && <div className="upload-message">Uploading documents... Please wait.</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-section">
@@ -202,9 +262,45 @@ function ApplicationForm({ onBackToDashboard }) {
             </div>
           </div>
 
+          <div className="form-section">
+            <h3>Required Documents</h3>
+
+            <div className="input-group">
+              <label>ID Document / Passport Copy </label>
+              <input
+                type="file"
+                name="idDocument"
+                onChange={handleFileChange}
+                accept=".pdf,.jpg,.jpeg,.png"
+                //required
+                disabled={loading}
+              />
+              {files.idDocument && (
+                <small className="file-info">Selected: {files.idDocument.name}</small>
+              )}
+              <small className="file-help">Accepted: PDF, JPG, PNG (Max 5MB)</small>
+            </div>
+
+            <div className="input-group">
+              <label>Proof of Address </label>
+              <input
+                type="file"
+                name="proofOfAddress"
+                onChange={handleFileChange}
+                accept=".pdf,.jpg,.jpeg,.png"
+                //required
+                disabled={loading}
+              />
+              {files.proofOfAddress && (
+                <small className="file-info">Selected: {files.proofOfAddress.name}</small>
+              )}
+              <small className="file-help">Accepted: PDF, JPG, PNG (Max 5MB)</small>
+            </div>
+          </div>
+
           <div className="form-actions">
             <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Application'}
+              {loading ? (uploading ? 'Uploading...' : 'Submitting...') : 'Submit Application'}
             </button>
             {onBackToDashboard && (
               <button 
