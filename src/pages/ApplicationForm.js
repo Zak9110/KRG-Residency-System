@@ -1,8 +1,7 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../services/firebase';
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth } from '../services/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../services/firebase';
 import './ApplicationForm.css';
 
 function ApplicationForm({ onBackToDashboard }) {
@@ -14,22 +13,27 @@ function ApplicationForm({ onBackToDashboard }) {
     passportNumber: '',
     phoneNumber: '',
     currentAddress: '',
+    governorate: '',
     reasonForResidency: '',
     durationOfStay: '3-months'
   });
+  
   const [files, setFiles] = useState({
+    headshot: null,
     idDocument: null,
     proofOfAddress: null
   });
+  
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -51,19 +55,23 @@ function ApplicationForm({ onBackToDashboard }) {
   const uploadFile = async (file, folder) => {
     if (!file) return null;
     
-    const fileName = `${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, `${folder}/${auth.currentUser.uid}/${fileName}`);
-    
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    
-    return downloadURL;
+    try {
+      const fileName = `${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `${folder}/${auth.currentUser.uid}/${fileName}`);
+      
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      
+      return downloadURL;
+    } catch (error) {
+      console.error('File upload error:', error);
+      return null;
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setUploading(true);
     setError('');
 
     try {
@@ -72,20 +80,30 @@ function ApplicationForm({ onBackToDashboard }) {
       if (!user) {
         setError('You must be logged in to submit an application');
         setLoading(false);
-        setUploading(false);
         return;
       }
 
-      // Upload documents
+      // Upload documents if provided (optional)
+      let headshotURL = null;
       let idDocumentURL = null;
       let proofOfAddressURL = null;
 
-      if (files.idDocument) {
-        idDocumentURL = await uploadFile(files.idDocument, 'id-documents');
-      }
+      if (files.headshot || files.idDocument || files.proofOfAddress) {
+        setUploading(true);
+        
+        if (files.headshot) {
+          headshotURL = await uploadFile(files.headshot, 'headshots');
+        }
 
-      if (files.proofOfAddress) {
-        proofOfAddressURL = await uploadFile(files.proofOfAddress, 'address-proofs');
+        if (files.idDocument) {
+          idDocumentURL = await uploadFile(files.idDocument, 'id-documents');
+        }
+
+        if (files.proofOfAddress) {
+          proofOfAddressURL = await uploadFile(files.proofOfAddress, 'address-proofs');
+        }
+        
+        setUploading(false);
       }
 
       // Add application to Firestore
@@ -95,6 +113,7 @@ function ApplicationForm({ onBackToDashboard }) {
         userEmail: user.email,
         status: 'pending',
         documents: {
+          headshot: headshotURL,
           idDocument: idDocumentURL,
           proofOfAddress: proofOfAddressURL
         },
@@ -116,11 +135,13 @@ function ApplicationForm({ onBackToDashboard }) {
         passportNumber: '',
         phoneNumber: '',
         currentAddress: '',
+        governorate: '',
         reasonForResidency: '',
         durationOfStay: '3-months'
       });
 
       setFiles({
+        headshot: null,
         idDocument: null,
         proofOfAddress: null
       });
@@ -202,6 +223,23 @@ function ApplicationForm({ onBackToDashboard }) {
             </div>
 
             <div className="input-group">
+              <label>Governorate in Kurdistan Region *</label>
+              <select
+                name="governorate"
+                value={formData.governorate}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              >
+                <option value="">Select Governorate</option>
+                <option value="erbil">Erbil (Hewlêr)</option>
+                <option value="sulaymaniyah">Sulaymaniyah (Silêmanî)</option>
+                <option value="duhok">Duhok (Dihok)</option>
+                <option value="halabja">Halabja</option>
+              </select>
+            </div>
+
+            <div className="input-group">
               <label>Phone Number *</label>
               <input
                 type="tel"
@@ -263,44 +301,60 @@ function ApplicationForm({ onBackToDashboard }) {
           </div>
 
           <div className="form-section">
-            <h3>Required Documents</h3>
+            <h3>Supporting Documents (Optional)</h3>
+            <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+              Upload supporting documents to speed up your application process
+            </p>
 
             <div className="input-group">
-              <label>ID Document / Passport Copy </label>
+              <label>Personal Photo (Headshot)</label>
+              <input
+                type="file"
+                name="headshot"
+                onChange={handleFileChange}
+                accept=".jpg,.jpeg,.png"
+                disabled={loading}
+              />
+              {files.headshot && (
+                <small className="file-info">✓ Selected: {files.headshot.name}</small>
+              )}
+              <small className="file-help">Recent passport-style photo (JPG, PNG - Max 5MB)</small>
+            </div>
+
+            <div className="input-group">
+              <label>ID Document / Passport Copy</label>
               <input
                 type="file"
                 name="idDocument"
                 onChange={handleFileChange}
                 accept=".pdf,.jpg,.jpeg,.png"
-                //required
                 disabled={loading}
               />
               {files.idDocument && (
-                <small className="file-info">Selected: {files.idDocument.name}</small>
+                <small className="file-info">✓ Selected: {files.idDocument.name}</small>
               )}
               <small className="file-help">Accepted: PDF, JPG, PNG (Max 5MB)</small>
             </div>
 
             <div className="input-group">
-              <label>Proof of Address </label>
+              <label>Proof of Address</label>
               <input
                 type="file"
                 name="proofOfAddress"
                 onChange={handleFileChange}
                 accept=".pdf,.jpg,.jpeg,.png"
-                //required
                 disabled={loading}
               />
               {files.proofOfAddress && (
-                <small className="file-info">Selected: {files.proofOfAddress.name}</small>
+                <small className="file-info">✓ Selected: {files.proofOfAddress.name}</small>
               )}
-              <small className="file-help">Accepted: PDF, JPG, PNG (Max 5MB)</small>
+              <small className="file-help">Utility bill, rental agreement, etc. (PDF, JPG, PNG - Max 5MB)</small>
             </div>
           </div>
 
           <div className="form-actions">
             <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? (uploading ? 'Uploading...' : 'Submitting...') : 'Submit Application'}
+              {loading ? (uploading ? 'Uploading Documents...' : 'Submitting...') : 'Submit Application'}
             </button>
             {onBackToDashboard && (
               <button 

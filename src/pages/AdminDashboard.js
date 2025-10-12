@@ -190,25 +190,28 @@ function AdminDashboard({ onLogout }) {
 
                 <div className="card-body-admin">
                   <div className="info-grid">
-                    <div className="info-item">
-                      <strong>Email:</strong> {app.userEmail}
+                      <div className="info-item">
+                        <strong>Email:</strong> {app.userEmail}
+                      </div>
+                      <div className="info-item">
+                        <strong>Phone:</strong> {app.phoneNumber}
+                      </div>
+                      <div className="info-item">
+                        <strong>Governorate:</strong> {app.governorate ? app.governorate.charAt(0).toUpperCase() + app.governorate.slice(1) : 'N/A'}
+                      </div>
+                      <div className="info-item">
+                        <strong>Nationality:</strong> {app.nationality}
+                      </div>
+                      <div className="info-item">
+                        <strong>ID/Passport:</strong> {app.passportNumber}
+                      </div>
+                      <div className="info-item">
+                        <strong>Duration:</strong> {app.durationOfStay}
+                      </div>
+                      <div className="info-item">
+                        <strong>Submitted:</strong> {formatDate(app.submittedAt)}
+                      </div>
                     </div>
-                    <div className="info-item">
-                      <strong>Phone:</strong> {app.phoneNumber}
-                    </div>
-                    <div className="info-item">
-                      <strong>Nationality:</strong> {app.nationality}
-                    </div>
-                    <div className="info-item">
-                      <strong>ID/Passport:</strong> {app.passportNumber}
-                    </div>
-                    <div className="info-item">
-                      <strong>Duration:</strong> {app.durationOfStay}
-                    </div>
-                    <div className="info-item">
-                      <strong>Submitted:</strong> {formatDate(app.submittedAt)}
-                    </div>
-                  </div>
 
                   <div className="info-section">
                     <strong>Address:</strong>

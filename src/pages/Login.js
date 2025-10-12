@@ -83,16 +83,27 @@ function Login({ onSwitchToSignup }) {
         </form>
 
         <p className="signup-link">
-          Don't have an account? 
-          <button 
-            type="button" 
-            onClick={onSwitchToSignup} 
-            className="link-button"
-            disabled={loading}
-          >
-            Sign up
-          </button>
-        </p>
+              Don't have an account? 
+              <button 
+                type="button" 
+                onClick={onSwitchToSignup} 
+                className="link-button"
+                disabled={loading}
+              >
+                Sign up
+              </button>
+            </p>
+
+            <p className="signup-link" style={{ marginTop: '10px' }}>
+              <button 
+                type="button" 
+                onClick={() => window.location.reload()} 
+                className="link-button"
+                disabled={loading}
+              >
+                ← Back to Home
+              </button>
+         </p>
       </div>
     </div>
   );

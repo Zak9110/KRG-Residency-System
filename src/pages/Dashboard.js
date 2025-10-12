@@ -128,19 +128,22 @@ function Dashboard({ onNavigateToApplication, onLogout }) {
                   </div>
                   
                   <div className="card-body">
-                    <div className="info-row">
-                      <strong>Name:</strong> {app.fullName}
+                      <div className="info-row">
+                        <strong>Name:</strong> {app.fullName}
+                      </div>
+                      <div className="info-row">
+                        <strong>Governorate:</strong> {app.governorate ? app.governorate.charAt(0).toUpperCase() + app.governorate.slice(1) : 'N/A'}
+                      </div>
+                      <div className="info-row">
+                        <strong>Type:</strong> {app.applicationType}
+                      </div>
+                      <div className="info-row">
+                        <strong>Duration:</strong> {app.durationOfStay}
+                      </div>
+                      <div className="info-row">
+                        <strong>Submitted:</strong> {formatDate(app.submittedAt)}
+                      </div>
                     </div>
-                    <div className="info-row">
-                      <strong>Type:</strong> {app.applicationType}
-                    </div>
-                    <div className="info-row">
-                      <strong>Duration:</strong> {app.durationOfStay}
-                    </div>
-                    <div className="info-row">
-                      <strong>Submitted:</strong> {formatDate(app.submittedAt)}
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
